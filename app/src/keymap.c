@@ -17,6 +17,11 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/matrix.h>
 #include <zmk/sensors.h>
 #include <zmk/virtual_key_position.h>
+#if ZMK_KEYMAP_HAS_SENSORS
+#include <zmk_driver_device_detector/encoder_handler.h>
+#include <zmk_driver_device_detector/trackball_handler.h>
+#include <zmk_driver_device_detector/joystick_handler.h>
+#endif
 
 #include <zmk/event_manager.h>
 #include <zmk/events/position_state_changed.h>
@@ -742,6 +747,17 @@ int zmk_keymap_sensor_event(uint8_t sensor_index,
                             const struct zmk_sensor_channel_data *channel_data,
                             size_t channel_data_size, int64_t timestamp) {
     bool opaque_response = false;
+
+    // 检查传感器类型，并根据类型检查设备是否活跃
+    if (channel_data[0].channel == SENSOR_CHAN_ROTATION && !zmk_encoder_is_active()) {
+        return 0; // 忽略事件
+    }
+    if (channel_data[0].channel == SENSOR_CHAN_TRACKBALL && !zmk_trackball_is_active()) {
+        return 0; // 忽略事件
+    }
+    if (channel_data[0].channel == SENSOR_CHAN_JOYSTICK && !zmk_joystick_is_active()) {
+        return 0; // 忽略事件
+    }
 
     for (int layer_idx = ZMK_KEYMAP_LAYERS_LEN - 1; layer_idx >= 0; layer_idx--) {
         uint8_t layer_id = LAYER_INDEX_TO_ID(layer_idx);
