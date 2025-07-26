@@ -1,0 +1,72 @@
+/*
+ * 外设深度睡眠控制键映射示例
+ * 实现主键盘控制从键盘深度休眠/唤醒
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/peripheral_sleep.h>
+
+/ {
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            // ┌───┬───┬───┬───┬───┬───┐       ┌───┬───┬───┬───┬───┬───┐
+            // │ Q │ W │ E │ R │ T │ Y │       │ U │ I │ O │ P │ [ │ ] │
+            // ├───┼───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┼───┤
+            // │ A │ S │ D │ F │ G │ H │       │ J │ K │ L │ ; │ ' │ENT│
+            // ├───┼───┼───┼───┼───┼───┤       ├───┼───┼───┼───┼───┼───┤
+            // │ Z │ X │ C │ V │ B │ N │       │ M │ , │ . │ / │UP │SFT│
+            // └───┴───┴───┴───┴───┴───┘       └───┴───┴───┴───┴───┴───┘
+            //                 ┌───┬───┐       ┌───┬───┐
+            //                 │SPC│FN │       │FN2│BSP│
+            //                 └───┴───┘       └───┴───┘
+            bindings = <
+                &kp Q    &kp W    &kp E    &kp R    &kp T    &kp Y        &kp U    &kp I    &kp O    &kp P    &kp LBKT &kp RBKT
+                &kp A    &kp S    &kp D    &kp F    &kp G    &kp H        &kp J    &kp K    &kp L    &kp SEMI &kp SQT  &kp ENTER
+                &kp Z    &kp X    &kp C    &kp V    &kp B    &kp N        &kp M    &kp COMMA &kp DOT &kp FSLH &kp UP   &kp RSHFT
+                                           &kp SPACE &mo 1                  &mo 2    &kp BSPC
+            >;
+        };
+
+        function_layer {
+            // 功能层 - 包含外设深度睡眠控制
+            bindings = <
+                &kp F1   &kp F2   &kp F3   &kp F4   &kp F5   &kp F6       &kp F7   &kp F8   &kp F9   &kp F10  &kp F11  &kp F12
+                &trans   &trans   &trans   &trans   &trans   &trans       &trans   &trans   &trans   &trans   &trans   &trans
+                // 外设深度睡眠控制键
+                &peripheral_sleep PDSLEEP_ON  &peripheral_sleep PDSLEEP_OFF  &trans   &trans   &trans   &trans       &trans   &trans   &trans   &trans   &kp LEFT &kp RIGHT
+                                           &trans   &trans                  &trans   &kp DEL
+            >;
+        };
+    };
+};
+
+/*
+ * 使用说明:
+ * 
+ * 外设深度睡眠控制 (function_layer):
+ * - Z键位置: 让从键盘进入深度睡眠模式
+ *   * 关闭显示屏 (OLED/LCD)
+ *   * 关闭RGB背光
+ *   * 关闭键盘背光  
+ *   * 保持最小BLE连接
+ *   * 保持键盘扫描功能
+ * 
+ * - X键位置: 从深度睡眠中唤醒从键盘
+ *   * 恢复所有外设功能
+ *   * 恢复正常工作状态
+ * 
+ * 操作方法:
+ * 1. 按住FN键 + Z: 从键盘进入深度睡眠
+ * 2. 按住FN键 + X: 从键盘唤醒  
+ * 3. 或按从键盘上的任意按键也可以唤醒
+ * 
+ * 注意事项:
+ * - 此功能只在从键盘（外设）上生效
+ * - 主键盘按相同按键不会影响自身状态
+ * - 深度睡眠期间从键盘仍可接收主键盘命令
+ * - BLE连接始终保持，不会断开重连
+ */ 

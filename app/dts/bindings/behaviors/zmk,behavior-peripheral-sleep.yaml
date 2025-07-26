@@ -1,0 +1,8 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Peripheral Deep Sleep Control Behavior
+
+compatible: "zmk,behavior-peripheral-sleep"
+
+include: one_param.yaml 
