@@ -749,3 +749,85 @@ osource "$(ZMK_CONFIG)/boards/shields/*/Kconfig.shield"
 
 
 source "Kconfig.zephyr"
+
+config ZMK_PM_SOFT_OFF
+    bool "Soft off functionality"
+    depends on SOC_SERIES_NRF52X || SOC_NRF5340_CPUAPP
+    default n
+    help
+      Enable support to shutdown the keyboard into an off state that
+      requires the reset button to wake the device.
+
+config ZMK_GPIO_KEY_WAKEUP_TRIGGER
+    bool
+    depends on DT_HAS_ZMK_GPIO_KEY_WAKEUP_TRIGGER_ENABLED && ZMK_PM_SOFT_OFF
+
+# 新增：智能睡眠配置选项
+config ZMK_SMART_SLEEP
+    bool "Enable smart sleep functionality"
+    default y
+    help
+      Enable smart sleep that maintains minimal connectivity
+      while providing power savings.
+
+config ZMK_SMART_SLEEP_BT_KEEPALIVE
+    bool "Keep Bluetooth alive during smart sleep"
+    depends on ZMK_SMART_SLEEP && BT
+    default y
+    help
+      Maintain Bluetooth connection during smart sleep for
+      remote wake capabilities.
+
+config ZMK_REMOTE_SLEEP_BEHAVIOR
+    bool "Enable remote sleep behavior"
+    depends on ZMK_SMART_SLEEP
+    default y
+    help
+      Allow keymap to control smart sleep states.
+
+config ZMK_SPLIT_SLEEP_MGMT
+    bool "Enable split keyboard sleep management"
+    depends on ZMK_SMART_SLEEP && ZMK_SPLIT
+    default y
+    help
+      Allow central device to control peripheral sleep states.
+
+config ZMK_SMART_SLEEP_BT_INTERVAL_MIN
+    int "Minimum BT interval during smart sleep (1.25ms units)"
+    depends on ZMK_SMART_SLEEP_BT_KEEPALIVE
+    default 80
+    range 6 3200
+    help
+      Minimum Bluetooth connection interval during smart sleep.
+      Lower values provide better responsiveness but higher power consumption.
+
+config ZMK_SMART_SLEEP_BT_INTERVAL_MAX
+    int "Maximum BT interval during smart sleep (1.25ms units)"
+    depends on ZMK_SMART_SLEEP_BT_KEEPALIVE
+    default 160
+    range 6 3200
+    help
+      Maximum Bluetooth connection interval during smart sleep.
+
+config ZMK_SMART_SLEEP_BT_LATENCY
+    int "BT latency during smart sleep"
+    depends on ZMK_SMART_SLEEP_BT_KEEPALIVE
+    default 4
+    range 0 499
+    help
+      Number of connection events that can be skipped during smart sleep.
+      Higher values provide better power savings but slower response.
+
+config ZMK_SMART_SLEEP_DEBUG
+    bool "Enable smart sleep debugging"
+    depends on ZMK_SMART_SLEEP
+    default n
+    help
+      Enable debugging features for smart sleep functionality.
+
+config ZMK_SMART_SLEEP_STATS
+    bool "Enable smart sleep statistics"
+    depends on ZMK_SMART_SLEEP
+    default n
+    help
+      Enable power usage statistics for smart sleep.

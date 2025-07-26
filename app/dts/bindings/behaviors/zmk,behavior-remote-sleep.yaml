@@ -1,0 +1,27 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Remote Sleep Control Behavior
+
+compatible: "zmk,behavior-remote-sleep"
+
+include: zero_param.yaml
+
+properties:
+  default-command:
+    type: int
+    required: false
+    default: 2
+    description: Default command (0=enter, 1=exit, 2=toggle)
+    
+  affect-peripherals:
+    type: boolean
+    required: false
+    default: true
+    description: Whether to control peripheral devices
+    
+  delay-ms:
+    type: int
+    required: false 
+    default: 0
+    description: Delay before executing command 

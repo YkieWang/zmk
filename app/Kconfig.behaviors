@@ -94,6 +94,12 @@ config ZMK_BEHAVIOR_SOFT_OFF
     default y
     depends on DT_HAS_ZMK_BEHAVIOR_SOFT_OFF_ENABLED && ZMK_PM_SOFT_OFF
 
+# 新增：远程睡眠行为配置
+config ZMK_BEHAVIOR_REMOTE_SLEEP
+    bool
+    default y
+    depends on DT_HAS_ZMK_BEHAVIOR_REMOTE_SLEEP_ENABLED && ZMK_SMART_SLEEP
+
 config ZMK_BEHAVIOR_SENSOR_ROTATE_COMMON
     bool
 

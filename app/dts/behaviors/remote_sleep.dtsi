@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/zmk/behaviors.h>
+
+/ {
+    behaviors {
+        #if ZMK_BEHAVIOR_OMIT(REMOTE_SLEEP)
+        /omit-if-no-ref/
+        #endif
+        rsleep: remote_sleep {
+            compatible = "zmk,behavior-remote-sleep";
+            #binding-cells = <1>;
+            default-command = <2>;  // 默认切换模式
+            affect-peripherals;     // 默认影响外设
+        };
+        
+        #if ZMK_BEHAVIOR_OMIT(REMOTE_SLEEP)  
+        /omit-if-no-ref/
+        #endif
+        rsleep_in: remote_sleep_in {
+            compatible = "zmk,behavior-remote-sleep";
+            #binding-cells = <0>;
+            default-command = <0>;  // 仅进入睡眠
+            affect-peripherals;
+        };
+        
+        #if ZMK_BEHAVIOR_OMIT(REMOTE_SLEEP)
+        /omit-if-no-ref/ 
+        #endif
+        rsleep_out: remote_sleep_out {
+            compatible = "zmk,behavior-remote-sleep";
+            #binding-cells = <0>;
+            default-command = <1>;  // 仅退出睡眠
+            affect-peripherals;
+        };
+    };
+}; 

@@ -31,6 +31,10 @@ target_sources(app PRIVATE src/sensors.c)
 target_sources_ifdef(CONFIG_ZMK_WPM app PRIVATE src/wpm.c)
 target_sources(app PRIVATE src/event_manager.c)
 target_sources_ifdef(CONFIG_ZMK_PM app PRIVATE src/pm.c)
+
+# 新增：智能睡眠模块
+target_sources_ifdef(CONFIG_ZMK_SMART_SLEEP app PRIVATE src/smart_sleep.c)
+
 target_sources_ifdef(CONFIG_ZMK_EXT_POWER app PRIVATE src/ext_power_generic.c)
 target_sources_ifdef(CONFIG_ZMK_GPIO_KEY_WAKEUP_TRIGGER app PRIVATE src/gpio_key_wakeup_trigger.c)
 target_sources(app PRIVATE src/events/activity_state_changed.c)
@@ -42,6 +46,10 @@ target_sources_ifdef(CONFIG_USB_DEVICE_STACK app PRIVATE src/events/usb_conn_sta
 target_sources(app PRIVATE src/behaviors/behavior_reset.c)
 target_sources_ifdef(CONFIG_ZMK_EXT_POWER app PRIVATE src/behaviors/behavior_ext_power.c)
 target_sources_ifdef(CONFIG_ZMK_BEHAVIOR_SOFT_OFF app PRIVATE src/behaviors/behavior_soft_off.c)
+
+# 新增：远程睡眠行为
+target_sources_ifdef(CONFIG_ZMK_BEHAVIOR_REMOTE_SLEEP app PRIVATE src/behaviors/behavior_remote_sleep.c)
+
 if ((NOT CONFIG_ZMK_SPLIT) OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
   target_sources(app PRIVATE src/hid.c)
   target_sources_ifdef(CONFIG_ZMK_MOUSE app PRIVATE src/mouse.c)
@@ -95,6 +103,11 @@ target_sources_ifdef(CONFIG_ZMK_HID_INDICATORS app PRIVATE src/events/hid_indica
 
 target_sources_ifdef(CONFIG_ZMK_SPLIT app PRIVATE src/events/split_peripheral_status_changed.c)
 add_subdirectory(src/split)
+
+# 新增：分体键盘智能睡眠支持
+if (CONFIG_ZMK_SPLIT AND CONFIG_ZMK_SPLIT_SLEEP_MGMT)
+    target_sources(app PRIVATE src/split/smart_sleep_coordination.c)
+endif()
 
 target_sources_ifdef(CONFIG_USB_DEVICE_STACK app PRIVATE src/usb.c)
 target_sources_ifdef(CONFIG_ZMK_USB app PRIVATE src/usb_hid.c)
