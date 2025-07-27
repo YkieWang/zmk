@@ -33,9 +33,15 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-// 外设深度睡眠命令
+// 外设深度睡眠控制命令
 #define PERIPHERAL_DEEP_SLEEP_ON    1
 #define PERIPHERAL_DEEP_SLEEP_OFF   0
+#define PERIPHERAL_DEEP_SLEEP_TOGGLE 2  // 新增toggle命令
+
+// 别名，便于使用
+#define PDSLEEP_ON     PERIPHERAL_DEEP_SLEEP_ON
+#define PDSLEEP_OFF    PERIPHERAL_DEEP_SLEEP_OFF
+#define PDSLEEP_TOGGLE PERIPHERAL_DEEP_SLEEP_TOGGLE
 
 // 外设睡眠状态跟踪
 static bool peripheral_in_deep_sleep = false;
@@ -219,37 +225,32 @@ static int behavior_peripheral_sleep_init(const struct device *dev) {
 }
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
-                                     struct zmk_behavior_binding_event event) {
-    // 只在外设上执行，中央设备忽略
-    if (!IS_SPLIT_PERIPHERAL) {
-        LOG_DBG("Central device ignoring peripheral deep sleep command");
-        return ZMK_BEHAVIOR_OPAQUE;
-    }
-    
-    LOG_INF("🔥 PERIPHERAL RECEIVED SLEEP COMMAND: %d", binding->param1);
-    LOG_INF("🔥 EVENT SOURCE: %d, POSITION: %d", event.source, event.position);
-    
-    // 强制RGB指示收到命令（紫色闪烁）
-#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW)
-    for (int i = 0; i < 2; i++) {
-        zmk_rgb_underglow_set_hsb(300, 100, 50);  // 紫色
-        k_msleep(150);
-        zmk_rgb_underglow_off();
-        k_msleep(150);
-    }
-#endif
-    
+                                    struct zmk_behavior_binding_event event) {
     switch (binding->param1) {
-    case PERIPHERAL_DEEP_SLEEP_ON:
-        LOG_INF("🛌 EXECUTING SLEEP COMMAND");
-        return peripheral_deep_sleep_enter();
-    case PERIPHERAL_DEEP_SLEEP_OFF:
-        LOG_INF("⏰ EXECUTING WAKE COMMAND");
-        return peripheral_deep_sleep_exit();
+    case PDSLEEP_ON:
+        LOG_INF("Peripheral deep sleep ON command received");
+        peripheral_deep_sleep_enter();
+        break;
+    case PDSLEEP_OFF:
+        LOG_INF("Peripheral deep sleep OFF command received");
+        peripheral_deep_sleep_exit();
+        break;
+    case PDSLEEP_TOGGLE:
+        LOG_INF("Peripheral deep sleep TOGGLE command received");
+        if (peripheral_in_deep_sleep) {
+            LOG_INF("Currently in deep sleep, exiting...");
+            peripheral_deep_sleep_exit();
+        } else {
+            LOG_INF("Currently awake, entering deep sleep...");
+            peripheral_deep_sleep_enter();
+        }
+        break;
     default:
-        LOG_ERR("❌ UNKNOWN peripheral deep sleep command: %d", binding->param1);
-        return -ENOTSUP;
+        LOG_ERR("Unknown peripheral sleep command: %d", binding->param1);
+        return -EINVAL;
     }
+
+    return ZMK_BEHAVIOR_OPAQUE;
 }
 
 static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
