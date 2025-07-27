@@ -226,31 +226,45 @@ static int behavior_peripheral_sleep_init(const struct device *dev) {
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                     struct zmk_behavior_binding_event event) {
+    // 只在外设上执行，中央设备忽略
+    if (!IS_SPLIT_PERIPHERAL) {
+        LOG_DBG("Central device ignoring peripheral deep sleep command");
+        return ZMK_BEHAVIOR_OPAQUE;
+    }
+    
+    LOG_INF("🔥 PERIPHERAL RECEIVED SLEEP COMMAND: %d", binding->param1);
+    LOG_INF("🔥 EVENT SOURCE: %d, POSITION: %d", event.source, event.position);
+    
+    // 强制RGB指示收到命令（紫色闪烁）
+#if IS_ENABLED(CONFIG_ZMK_RGB_UNDERGLOW)
+    for (int i = 0; i < 2; i++) {
+        zmk_rgb_underglow_set_hsb(300, 100, 50);  // 紫色
+        k_msleep(150);
+        zmk_rgb_underglow_off();
+        k_msleep(150);
+    }
+#endif
+    
     switch (binding->param1) {
     case PDSLEEP_ON:
-        LOG_INF("Peripheral deep sleep ON command received");
-        peripheral_deep_sleep_enter();
-        break;
+        LOG_INF("🛌 EXECUTING SLEEP COMMAND");
+        return peripheral_deep_sleep_enter();
     case PDSLEEP_OFF:
-        LOG_INF("Peripheral deep sleep OFF command received");
-        peripheral_deep_sleep_exit();
-        break;
+        LOG_INF("⏰ EXECUTING WAKE COMMAND");
+        return peripheral_deep_sleep_exit();
     case PDSLEEP_TOGGLE:
-        LOG_INF("Peripheral deep sleep TOGGLE command received");
+        LOG_INF("🔄 EXECUTING TOGGLE COMMAND");
         if (peripheral_in_deep_sleep) {
             LOG_INF("Currently in deep sleep, exiting...");
-            peripheral_deep_sleep_exit();
+            return peripheral_deep_sleep_exit();
         } else {
             LOG_INF("Currently awake, entering deep sleep...");
-            peripheral_deep_sleep_enter();
+            return peripheral_deep_sleep_enter();
         }
-        break;
     default:
-        LOG_ERR("Unknown peripheral sleep command: %d", binding->param1);
-        return -EINVAL;
+        LOG_ERR("❌ UNKNOWN peripheral deep sleep command: %d", binding->param1);
+        return -ENOTSUP;
     }
-
-    return ZMK_BEHAVIOR_OPAQUE;
 }
 
 static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
@@ -261,7 +275,7 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
 static const struct behavior_driver_api behavior_peripheral_sleep_driver_api = {
     .binding_pressed = on_keymap_binding_pressed,
     .binding_released = on_keymap_binding_released,
-    // 修改为GLOBAL locality，让命令发送到所有设备（左手和右手）
+    // 使用GLOBAL locality让命令传递到所有设备，但通过代码逻辑只在从设备上执行
     .locality = BEHAVIOR_LOCALITY_GLOBAL,
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
     .get_parameter_metadata = zmk_behavior_get_empty_param_metadata,
