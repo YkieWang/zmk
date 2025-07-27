@@ -12,7 +12,7 @@
         /omit-if-no-ref/
 #endif
         psleep: psleep {
-            compatible = "zmk,behavior-peripheral-sleep";
+            compatible = "zmk,behavior-psleep";
             #binding-cells = <1>;
         };
     };

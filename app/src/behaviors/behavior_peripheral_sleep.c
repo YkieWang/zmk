@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-#define DT_DRV_COMPAT zmk_behavior_peripheral_sleep
+#define DT_DRV_COMPAT zmk_behavior_psleep
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
